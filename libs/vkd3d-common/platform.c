@@ -41,10 +41,33 @@ static bool vkd3d_parse_linux_release(const char *release, uint32_t *major, uint
 # include <dlfcn.h>
 # include <errno.h>
 # include <sys/utsname.h>
+# include <libgen.h>
 
 vkd3d_module_t vkd3d_dlopen(const char *name)
 {
-    return dlopen(name, RTLD_NOW);
+    vkd3d_module_t handle = dlopen(name, RTLD_NOW);
+    if (!handle)
+    {
+        // Get the path of the current shared library
+        Dl_info dl_info;
+        if (dladdr((void*)vkd3d_dlopen, &dl_info) && dl_info.dli_fname)
+        {
+            // Extract directory name
+            char lib_path[4096];
+            strncpy(lib_path, dl_info.dli_fname, sizeof(lib_path) - 1);
+            lib_path[sizeof(lib_path) - 1] = '\0'; // Ensure null termination
+            char *dir = dirname(lib_path);
+
+            // Construct the new path to the target library
+            char full_path[4096];
+            snprintf(full_path, sizeof(full_path), "%s/%s", dir, name);
+
+            // Try loading from the same directory as the current library
+            handle = dlopen(full_path, RTLD_NOW);
+        }
+    }
+
+    return handle;
 }
 
 void *vkd3d_dlsym(vkd3d_module_t handle, const char *symbol)
