@@ -669,6 +669,8 @@ static HRESULT STDMETHODCALLTYPE d3d12core_CreateDevice(d3d12core_interface *cor
         device_create_info.device_extensions = (const char *const *)extensions;
         device_create_info.device_extension_count = len;
     }
+#else
+    device_create_info.parent = adapter;
 #endif
 
     hr = vkd3d_create_device(&device_create_info, iid, device);
