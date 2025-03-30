@@ -539,6 +539,7 @@ static HRESULT vkd3d_create_instance_global(struct vkd3d_instance **out_instance
 #else
         /* TODO: We need to attempt to dlopen() native DXVK DXGI and handle this more gracefully. */
         "VK_KHR_xcb_surface",
+        "VK_KHR_wayland_surface",
 #endif
     };
 
